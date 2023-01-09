@@ -1,0 +1,190 @@
+Spring框架
+一、介绍
+    spring是于2003年兴起的一个开源框架。是为了解决企业应用复杂性而诞生的
+核心：控制反转（IOC）和面向切面编程（AOP）
+可以应用在java se/ee中使用
+二、特点
+    轻量级框架，
+    针对接口编程，解耦合
+    AOP编程的支持，提高了代码的复用
+    方便集成各种框架
+三spr的体系结构
+四 spring环境搭建
+ 引入依赖（引入spring的4个核心依赖）
+ spring-beans spring-core spring-context spring-expression
+ 注意：各个依赖版本要相同
+ 五、IOC
+    1.什么是IOC
+    控制反转（IOC Inversion of Control） 是一个概念和思想。
+    在程序中表示将对象的控制权由程序转换给容器，通过容器进行对象的创建，装配和管理
+    2.依赖注入
+     子程序运行过程中，若需要另一个对象协助时，无需再代码中创建被使用这，依赖于外部容器创建后传递给程序
+     在spring框架中使用依赖注入思想ioc
+     3.实现方式
+     a ioc的实现
+        创建实体类
+        创建spring的配置文件 ->将实体类注入到spring容器中
+        BeanFactory接口和ApplicationContext接口的区别
+                BeanFactory接口是Spring容器的顶层接口
+                ApplicationContext接口是BeanFactory接口的子接口
+                区别：
+                    创建时间点不同
+                        BeanFactory -> 什么时候使用什么时候创建
+                        ApplicationContext -> 只有读取了配置文件，默认就创建
+                注意：spring容器中的实体对象默认为单例模式
+                IOC的底层实现采用了什么方式？
+                   反射和工厂模式
+                Bean实例化的方式：
+                1）spring容器默认调用实体类中的无参构造方法实例化Bean
+                2）使用静态工厂实例化Bean
+                3）实例工厂实例化Bean
+
+B、依赖注入
+   属性的注入（采用配置文件）
+    1）set注入
+      要求：实体类的属性必须提供set方法
+    2）构造方法注入
+      利用实体类的有参构造给属性赋值
+      注意：使用的时候参数名称进行关联，与顺序无关
+           如果在构造方法重载中有同名的构造方法，在进行Bean的实例化，使用最后一个
+    3)P空间注入
+     本质是set注入
+     目的：简化set注入的书写的（知道就可以）
+     注意：要使用P空间注入，要先引入p空间的约束（http://www.springframework.org/schema/p）
+     属性值的注入（采用注解形式）
+     注意：要使用注解进行依赖注入在Spring的配置文件必须开启组件扫描：
+     <context:component-scan base-package="包名"/>
+     常用的注解：
+     @Component->标识此类是spring容器中的组件
+       作用：将实体类注入到spring容器中
+       属性：
+         value -> 实体类在容器中的标识 相当于<bean>标签的id值
+         注意：
+         value有默认值 实体类在容器中的标识为类名 要求必须是驼峰命名
+    @Value
+      作用：给属性赋值
+      位置：属性上面
+      属性：
+         value -> 实体类中的属性的值
+      注意：不能给引用类型赋值
+   c、自动装配
+    在使用实体对象时，实体对象中的关联对象进行自动的注入
+     前提：只能使用在引用类型（关联对象）中
+     分类：btType和ByName
+     使用配置文件实现自动装配
+autowire->设置关联对象的装配方式
+byType 根据关联对象的类型进行装配
+要求：Java实体类中的关联对象属性类型必须与Spring容器中的Bean对象的类型同源
+同源：类型相同 java实体类的关联对象属性类型与Spring容器中Bean对象的类型有父子关系
+java实体类的关联对象属性类型与Spring容器中Bean对象的类型存在接口和实现类的关系
+byName 根据关联对象的标识名进行装配
+要求：Java实体类中的关联对象属性名与Spring容器中Bean对象的标识要一致
+java实体类中的关联对象类型与Spring容器中Bean对象类型要同源
+
+使用注解实现自动装配
+@Autowired
+默认使用byType进行自动装配
+要是使用byName进行自动装配，需要在关联对象中添加@Qualifier注解（要求：属性的类型要和容器的类型是同源）
+属性：
+    required 检查关联对象是否必须进行装配
+    取值：true 关联对象必须要装配 装配实现抛出异常：默认
+    false 关联对象可以不进行装配 装配失败 返回null 不会抛出异常
+@Resource
+  此注解是JDK提供的，spring框架提供了对此注解的支持
+  引入注解的依赖
+默认采用ByName进行装配；若byName装配失败采用byType进行装配
+若只想使用byName 进行装配，哟给注解添加name属性 name属性的取值为spring容器中组件id
+4.Bean的生命周期
+   单例模式：scope=“singleton”
+   生命周期：
+     出生：应用程序加载，创建spring容器时候，bean实例就被创建
+     活着：容器存在，bean实例就一直存在
+     死亡：应用程序卸载，销毁容器时，bean实例被销毁
+   多例模式：scope=“prototype"
+      生命周期：
+        出生：使用bean实例时才创建bean实例
+        活着：只要bean被使用一直活着
+        死亡：长时间不使用，被java的垃圾回收机制进行回收（手动赋值为NULL）
+   会话：scope=“session”
+   一定在web项目 bean是存储在session中的
+   生命周期：
+           出生：会话建立时候，创建bean实例
+           活着：整个会话阶段一直活着
+           死亡：会话结束 清空session的数据
+ 请求：scope="request"
+ 一定在web中 bean是存储在request中的
+    生命周期：
+            出生：请求建立时候，创建bean实例
+            活着：一次请求中
+            死亡：请求结束
+六、AOP
+    1.什么是AOP
+      面向切面编程（Aspect Oriented Programming）;通过编译方式在程序运行期间使用动态代理模式在指定的位置添加附加功能。
+   2.AOP工作原理
+      动态代理模式
+   3.AOP的术语
+      连接点（JOINPOINT）
+            类中可以添加附加功能的方法 类中的所有的方法都是连接点
+      b、切入点（pointcut）
+          实际被添加附加功能的方法
+     c、通知（ADVICE）
+        实际增加的逻辑部分  附加功能
+        根据通知加入的位置分类：
+            前置通知 在方法执行之前增强
+            后置通知 在方法执行之后增强
+            环绕通知 在方法执行之前和之后增强
+            异常通知   执行方法出现异常才增强
+            最终通知  无论什么情况都要增加
+     d、切面（Aspect）：
+        通知与切点集合
+    e、目标对象（Target）
+            被增加的目标类
+      f 代理对象（proxy）
+        代理类
+      g 织入（Weaving）
+        将通知应用到切点的过程
+ 4.准备工作
+   spring框架中都是基于AspectJ实现的AOP操作
+   Aspect不是spring框架中内容，独立的AOP框架，定义了AOP框架的语法
+spring-aop/aspectjweaver/aopalliance
+5.切点表达式
+  语法：
+  execution(访问修饰符 [返回值类型][方法的全限定名][方法参数列表])
+  说明：
+     访问修饰符 -> public private 等 可以使用*代替 表示所有的
+     返回值类型  -> 可以省略
+     方法的全限定名 -> 包名.类名.方法名
+     方法参数列表 -> 使用.. 表示所有类型的参数（动态参数）
+     示例：
+     execution(public void com.service.bookservice.buy()) -> 切点：com.service包下的bookservice类中的buy（）方法的修饰符为public 返回值为void
+     execution(* com.service..*.*(..)) -> 切点：Com.service包及其子包下的所有类中的所有的方法，访问修饰符任意，返回类型任意，参数列表任意
+     七、jdbcTemplate（了解）
+        jdbcTemplate是spring对jdbc的封装,目的是JDBC更加容易使用
+        jdbcTemplate是spring的一部分，作用：管理资源的建立和释放
+        程序员要提供执行sql
+        jdbcTemplate提供了3类方法 执行sql语句
+        execute 可以执行任意的sql，该类方法没有返回值 一般用于执行ddl语言
+        update：执行update delete insert等dml语言
+        queryxx：用于select语句，DQL语言
+        2.准备工作
+        spring要使用jdbcTemplate采用的是数据库连接池进行连接管理，spring框架没有提供连接池，配置第三方连接池
+        （C3P0\druid\dbcp）
+        引入依赖
+        a、spring框架的核心依赖
+        b、数据库连接池依赖
+        c、数据库依赖
+        d、spring对jdbc支持的依赖（spring-jdbc）
+        3.配置数据源
+          <bean id="dataSource" class="com.alibaba.druid.pool.DruidDataSource"></bean>
+        4.配置jdbcTemplate
+        注意：配置JDBCTEMPLATE实例时，提供一个数据源
+        <bean id="jdbctemplate" class="org.springframework.jdbc.core.JdbcTemplate">
+                <property name="dataSource" ref="dataSource"/>
+            </bean>
+8.事务管理
+1.什么是事务
+   是用户定义的一个操作系列，这些操作是一个整体，不可分割的，要么都执行，要么都不执行
+2.事务的特性
+原子性：
+一致性：
+隔离性：
